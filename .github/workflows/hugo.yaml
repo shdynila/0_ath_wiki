@@ -33,7 +33,13 @@ jobs:
           hugo-version: 'latest'
           extended: true
       - name: Build with Hugo
-        run: hugo --minify
+        run: |
+          hugo --minify
+          # Verify that public folder exists and is not empty
+          if [ ! -d "public" ] || [ -z "$(ls -A public)" ]; then
+            echo "Error: Hugo failed to generate files in public/"
+            exit 1
+          fi
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
