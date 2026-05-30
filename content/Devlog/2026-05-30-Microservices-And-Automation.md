@@ -10,9 +10,10 @@ Today, we successfully expanded our backend infrastructure to encompass all the 
 
 We initialized three new critical services:
 1. **`0_ath_social_server`**: Dedicated entirely to managing Friends Lists, Parties, and Guild interactions. By isolating this, complex guild-wide database queries will never stutter the combat systems.
-2. **`0_ath_data_server`**: A dedicated persistence layer. It accepts asynchronous state updates (inventory changes, quest completions, coordinate saving) via gRPC and handles the heavy lifting of queueing and writing them to PostgreSQL.
+2. **`0_ath_persistence_server`**: A dedicated persistence layer. It accepts asynchronous state updates (inventory changes, quest completions, coordinate saving) via gRPC and handles the heavy lifting of queueing and writing them to PostgreSQL. This ensures the gameplay loops on the core servers never block on slow database I/O.
 3. **`0_ath_combat_server`**: We realized that calculating Area-of-Effect (AoE) damage, hit registration, and combat formulas is extremely CPU intensive. The Combat Server acts as a dedicated high-performance node that executes attacks and pushes the results back to the Gateway for broadcasting, and to the Core server for state validation.
 
+### Internal Microservices Topology
 Our cluster now consists of:
 * `0_ath_gateway` (Edge Routing)
 * `0_ath_auth_server` (Authentication)
@@ -20,7 +21,7 @@ Our cluster now consists of:
 * `0_ath_movement_server` (UDP High-Tick Proxy)
 * `0_ath_chat_server` (Postgres Pub/Sub)
 * `0_ath_social_server` (Guilds/Friends)
-* `0_ath_data_server` (Async Persistence)
+* `0_ath_persistence_server` (Async Persistence)
 * `0_ath_combat_server` (Hit Registration/Formulas)
 * `0_ath_proto` (Shared Protobuf schemas)
 
