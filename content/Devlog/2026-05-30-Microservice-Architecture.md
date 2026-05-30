@@ -14,7 +14,7 @@ The goal is to have a highly performant, scalable system where each distinct ser
 
 Based on the requirement for a "repository per service", here are the core repositories that have been created, and their specific roles:
 
-### 1. `0_ath_zone_server` (The "Game Server")
+### 1. `0_ath_core_server` (The "Game Server")
 **This is the primary Game Server.** It is the authoritative source of truth for the game world.
 * **Responsibilities**: 
   * Combat calculations (damage, aggro, spell casting).
@@ -39,7 +39,7 @@ Based on the requirement for a "repository per service", here are the core repos
   * Handling raw TCP and UDP connections from clients.
   * Managing Encryption (TLS/XOR) and packet boundary slicing.
   * Rate-limiting and DDoS protection.
-  * Routing packets to the correct internal server (e.g., routing `MovePacket` to `movement_server`, and `CastSpellPacket` to `zone_server`).
+  * Routing packets to the correct internal server (e.g., routing `MovePacket` to `movement_server`, and `CastSpellPacket` to `core_server`).
 * **Tech Stack**: Go, asynchronous networking.
 
 ### 4. `0_ath_auth_server` (The Login Server)
@@ -66,7 +66,7 @@ graph TD
     
     Gate -->|gRPC/TCP| Auth[0_ath_auth_server]
     Gate -->|UDP (Positions)| Move[0_ath_movement_server]
-    Gate -->|gRPC/TCP (Actions)| Zone[0_ath_zone_server]
+    Gate -->|gRPC/TCP (Actions)| Zone[0_ath_core_server]
     
     Zone -->|Async Save| DB[(Database)]
     Auth -->|Query User| DB
@@ -74,7 +74,7 @@ graph TD
 
 1. **Login**: Client connects to `0_ath_gateway`. Gateway forwards credentials to `0_ath_auth_server`. Auth server verifies and tells Gateway "This is Player 1".
 2. **Movement**: Client holds 'W'. It spams UDP position packets to the `0_ath_gateway`. The Gateway looks at the packet, sees it's a movement packet, and immediately relays it to `0_ath_movement_server`. The Movement server broadcasts it to nearby players.
-3. **Combat**: Client presses '1' to cast Fireball. Client sends a TCP packet to `0_ath_gateway`. Gateway sees it's a combat action, and forwards it to `0_ath_zone_server` (The Game Server). The Game Server calculates the damage and tells the Gateway to broadcast the "Damage Taken" animation to all nearby clients.
+3. **Combat**: Client presses '1' to cast Fireball. Client sends a TCP packet to `0_ath_gateway`. Gateway sees it's a combat action, and forwards it to `0_ath_core_server` (The Game Server). The Game Server calculates the damage and tells the Gateway to broadcast the "Damage Taken" animation to all nearby clients.
 
 ---
 
