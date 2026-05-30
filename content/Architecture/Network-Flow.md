@@ -10,14 +10,14 @@ The following diagram illustrates the fundamental data pipeline for the `0_ath` 
 
 ```mermaid
 graph TD
-    Client["0_ath Game Client"] -->|UDP| Gate["0_ath_gateway"]
-    Client -->|TCP| Gate
+    Client["0_ath Game Client"] -->|"UDP"| Gate["0_ath_gateway"]
+    Client -->|"TCP"| Gate
     
     Gate -->|"gRPC/TCP"| Auth["0_ath_auth_server"]
     Gate -->|"UDP (Positions)"| Move["0_ath_movement_server"]
     Gate -->|"gRPC/TCP (Actions)"| Zone["0_ath_core_server"]
     
-    Zone -->|"Async Save"| DB[(Database)]
+    Zone -->|"Async Save"| DB["Database"]
     Auth -->|"Query User"| DB
 ```
 
