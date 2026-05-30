@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Architectures on 0ath MMORPG Knowledge Base</title><link>https://shdynila.github.io/0_ath_wiki/architecture/</link><description>Recent content in Architectures on 0ath MMORPG Knowledge Base</description><generator>Hugo</generator><language>en-us</language><atom:link href="https://shdynila.github.io/0_ath_wiki/architecture/index.xml" rel="self" type="application/rss+xml"/><item><title/><link>https://shdynila.github.io/0_ath_wiki/architecture/ai_knowledge_service/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://shdynila.github.io/0_ath_wiki/architecture/ai_knowledge_service/</guid><description>&lt;h1 id="ai-knowledge-service--sync">AI Knowledge Service &amp;amp; Sync&lt;/h1>
+&lt;p>The knowledge ecosystem gives NPCs a &amp;ldquo;brain&amp;rdquo; and memory, integrating game mechanics with our devlog lore.&lt;/p>
+&lt;h2 id="0_ath_knowledge_sync">0_ath_knowledge_sync&lt;/h2>
+&lt;p>A background Go service using &lt;code>fsnotify&lt;/code>.&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>Purpose&lt;/strong>: Watch the &lt;code>C:\Users\nil\Documents\0ath&lt;/code> Obsidian vault for Markdown saves.&lt;/li>
+&lt;li>&lt;strong>Mechanism&lt;/strong>: Splits markdown, pings the local &lt;code>Ollama&lt;/code> endpoint (running &lt;code>Gemma&lt;/code>) to get a vector embedding, and upserts it to &lt;code>Qdrant&lt;/code> locally on port &lt;code>6333&lt;/code>.&lt;/li>
+&lt;li>&lt;strong>Run Command&lt;/strong>: &lt;code>go run main.go&lt;/code> inside the &lt;code>0_ath_knowledge_sync&lt;/code> dir.&lt;/li>
+&lt;/ul>
+&lt;h2 id="0_ath_knowledge_service">0_ath_knowledge_service&lt;/h2>
+&lt;p>A gRPC microservice designed to handle heavy AI computational loads without blocking the main game servers (&lt;code>World&lt;/code>, &lt;code>Scene&lt;/code>, &lt;code>Movement&lt;/code>).&lt;/p></description></item><item><title/><link>https://shdynila.github.io/0_ath_wiki/architecture/protobuf_workflow/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://shdynila.github.io/0_ath_wiki/architecture/protobuf_workflow/</guid><description>&lt;h1 id="protobuf-workflow-buf">Protobuf Workflow (Buf)&lt;/h1>
+&lt;p>We&amp;rsquo;ve abandoned &lt;code>protoc&lt;/code> shell scripts in favor of &lt;strong>Buf&lt;/strong> (&lt;code>bufbuild&lt;/code>) for managing our protobuf definitions in &lt;code>0_ath_proto&lt;/code>.&lt;/p>
+&lt;h2 id="why-buf">Why Buf?&lt;/h2>
+&lt;ul>
+&lt;li>No messy shell scripts.&lt;/li>
+&lt;li>Built-in linting (&lt;code>buf lint&lt;/code>).&lt;/li>
+&lt;li>Handles complex pathing and Go modules natively.&lt;/li>
+&lt;/ul>
+&lt;h2 id="structure">Structure&lt;/h2>
+&lt;ul>
+&lt;li>&lt;code>buf.yaml&lt;/code>: Workspace definition and linting rules.&lt;/li>
+&lt;li>&lt;code>buf.gen.yaml&lt;/code>: Generates the Go (&lt;code>protoc-gen-go&lt;/code>) and gRPC (&lt;code>protoc-gen-go-grpc&lt;/code>) stubs.&lt;/li>
+&lt;/ul>
+&lt;h2 id="how-to-compile">How to Compile&lt;/h2>
+&lt;p>Whenever you add or change a &lt;code>.proto&lt;/code> file, simply open &lt;code>0_ath_proto&lt;/code> in your terminal and run:&lt;/p></description></item><item><title/><link>https://shdynila.github.io/0_ath_wiki/architecture/server_architecture/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://shdynila.github.io/0_ath_wiki/architecture/server_architecture/</guid><description>&lt;h1 id="server-architecture">Server Architecture&lt;/h1>
+&lt;h2 id="inspiration-fkserver2">Inspiration: FKServer2&lt;/h2>
+&lt;p>The architecture is inspired by &lt;strong>FKServer2&lt;/strong>, an open-source 3D MMORPG server architecture (tlbb-like).
+Key characteristics of FKServer2:&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>BillingSvr &amp;amp; LoginSvr&lt;/strong>: Singleton instances. They do not depend on ShareMemory.&lt;/li>
+&lt;li>&lt;strong>WorldSvr&lt;/strong>: Singleton instance. Usually co-located with a ShareMemory instance on the same physical machine.&lt;/li>
+&lt;li>&lt;strong>Game Servers (Server)&lt;/strong>: Form a 1-to-1 pair with a ShareMemory instance.&lt;/li>
+&lt;li>&lt;strong>Cluster Layout&lt;/strong>: A cluster typically consists of:
+&lt;ul>
+&lt;li>1 x BillingSvr&lt;/li>
+&lt;li>1 x LoginSvr&lt;/li>
+&lt;li>1 x (WorldSvr + ShareMemory) pair&lt;/li>
+&lt;li>N x (Server + ShareMemory) pairs&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h2 id="current-0ath-architecture">Current 0ath Architecture&lt;/h2>
+&lt;p>Our goal is to build a microservices architecture from scratch, likely using Go and gRPC (as evidenced by our proto files).&lt;/p></description></item></channel></rss>

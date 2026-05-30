@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Devlogs on 0ath MMORPG Knowledge Base</title><link>https://shdynila.github.io/0_ath_wiki/devlog/</link><description>Recent content in Devlogs on 0ath MMORPG Knowledge Base</description><generator>Hugo</generator><language>en-us</language><atom:link href="https://shdynila.github.io/0_ath_wiki/devlog/index.xml" rel="self" type="application/rss+xml"/><item><title/><link>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-06-ai-and-npc-updates/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-06-ai-and-npc-updates/</guid><description>&lt;h1 id="devlog---2026-05-06-ai-npcs-and-buf-migration">Devlog - 2026-05-06: AI, NPCs, and Buf Migration&lt;/h1>
+&lt;h2 id="todays-progress">Today&amp;rsquo;s Progress&lt;/h2>
+&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>AI Knowledge Ecosystem&lt;/strong>:&lt;/p>
+&lt;ul>
+&lt;li>Built the &lt;code>0_ath_knowledge_service&lt;/code> repository. It provides a gRPC interface (&lt;code>knowledge_service.proto&lt;/code>) for generating NPC responses and retrieving lore.&lt;/li>
+&lt;li>Built the &lt;code>0_ath_knowledge_sync&lt;/code> background Go tool. It watches this Obsidian vault recursively and pushes real-time document embeddings to our local Qdrant Vector database via Ollama (Gemma model).&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>NPC Entity Rendering&lt;/strong>:&lt;/p>
+&lt;ul>
+&lt;li>Updated &lt;code>0_ath_proto/player/location.proto&lt;/code> to include an &lt;code>EntityType&lt;/code> enum so the client can differentiate players from NPCs.&lt;/li>
+&lt;li>Updated &lt;code>0_ath_movement_server&lt;/code> to inject a permanent mock &lt;code>NPC Guide&lt;/code> at coordinates &lt;code>[400, 300]&lt;/code> and modified the UDP broadcast loop so NPCs don&amp;rsquo;t get deleted via the timeout mechanism.&lt;/li>
+&lt;li>Updated &lt;code>0_ath_client&lt;/code> rendering loop (&lt;code>drawPlayers()&lt;/code>) to render the NPC uniquely as a red circle with an &amp;ldquo;NPC Guide&amp;rdquo; text tag, while rendering other players as green circles.&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Protobuf Migration to Buf&lt;/strong>:&lt;/p></description></item><item><title/><link>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-06-project-kickoff/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-06-project-kickoff/</guid><description>&lt;h1 id="devlog---2026-05-06-project-kickoff">Devlog - 2026-05-06: Project Kickoff&lt;/h1>
+&lt;h2 id="todays-progress">Today&amp;rsquo;s Progress&lt;/h2>
+&lt;ul>
+&lt;li>Transitioned focus onto building the &lt;strong>0ath MMORPG&lt;/strong>.&lt;/li>
+&lt;li>Established a dedicated Obsidian Vault at &lt;code>/Documents/0ath&lt;/code> to graph out knowledge, game mechanisms, and devlogs.&lt;/li>
+&lt;li>Set up &lt;strong>Qdrant&lt;/strong> database via Docker Compose (&lt;code>docker-compose.yml&lt;/code>) in the &lt;code>prjcts&lt;/code> root to enable vector storage. This will make it easier for AI retrieval and potentially drive intelligent NPC logic or game analytics.&lt;/li>
+&lt;li>Reviewed the &lt;strong>FKServer2&lt;/strong> server architecture for inspiration. The concept of singleton Login/World servers combined with horizontally scaled Game Servers paired with ShareMemory will serve as our architectural north star.&lt;/li>
+&lt;li>Our current microservice split includes:
+&lt;ul>
+&lt;li>&lt;code>0_ath_auth_server&lt;/code>&lt;/li>
+&lt;li>&lt;code>0_ath_movement_server&lt;/code>&lt;/li>
+&lt;li>&lt;code>0_ath_client&lt;/code>&lt;/li>
+&lt;li>&lt;code>0_ath_proto&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h2 id="next-steps">Next Steps&lt;/h2>
+&lt;ul>
+&lt;li>Validate the proto files and update them based on the new architectural insights.&lt;/li>
+&lt;li>Start implementing the &lt;code>WorldSvr&lt;/code> equivalent if not already present.&lt;/li>
+&lt;li>Implement the &lt;code>ShareMemory&lt;/code> / Cache mechanism (via &lt;code>cache_service.proto&lt;/code> or Redis/Memcached) for crash recovery and quick state syncing.&lt;/li>
+&lt;li>Tie Qdrant into the actual dev workflow (using Python or Go clients) to start vectorizing design documents.&lt;/li>
+&lt;/ul></description></item></channel></rss>
