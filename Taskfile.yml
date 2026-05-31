@@ -1,0 +1,17 @@
+version: '3'
+
+tasks:
+  serve:
+    desc: Run the local Hugo server
+    cmds:
+      - hugo server -D
+
+  build:
+    desc: Build the static Hugo site
+    cmds:
+      - hugo --minify
+
+  sync:
+    desc: Sync Obsidian vault to Hugo content
+    cmds:
+      - powershell -ExecutionPolicy Bypass -File .\sync.ps1
