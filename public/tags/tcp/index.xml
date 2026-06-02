@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Tcp on 0ath MMORPG Knowledge Base</title><link>https://shdynila.github.io/0_ath_wiki/tags/tcp/</link><description>Recent content in Tcp on 0ath MMORPG Knowledge Base</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Sat, 30 May 2026 00:00:00 +0000</lastBuildDate><atom:link href="https://shdynila.github.io/0_ath_wiki/tags/tcp/index.xml" rel="self" type="application/rss+xml"/><item><title>Core Network Flow: Login &amp; Movement</title><link>https://shdynila.github.io/0_ath_wiki/architecture/network-flow/</link><pubDate>Sat, 30 May 2026 00:00:00 +0000</pubDate><guid>https://shdynila.github.io/0_ath_wiki/architecture/network-flow/</guid><description>&lt;h1 id="0_ath-core-network-flow">0_ath Core Network Flow&lt;/h1>
+&lt;p>The following diagram illustrates the fundamental data pipeline for the &lt;code>0_ath&lt;/code> MMO, specifically highlighting how the Gateway proxies TCP and UDP traffic to our internal microservices.&lt;/p>
+&lt;pre tabindex="0">&lt;code class="language-mermaid" data-lang="mermaid">graph TD
+Client[&amp;#34;0_ath Game Client&amp;#34;] --&amp;gt;|&amp;#34;UDP&amp;#34;| Gate[&amp;#34;0_ath_gateway&amp;#34;]
+Client --&amp;gt;|&amp;#34;TCP&amp;#34;| Gate
+Gate --&amp;gt;|&amp;#34;gRPC/TCP&amp;#34;| Auth[&amp;#34;0_ath_auth_server&amp;#34;]
+Gate --&amp;gt;|&amp;#34;UDP (Positions)&amp;#34;| Move[&amp;#34;0_ath_movement_server&amp;#34;]
+Gate --&amp;gt;|&amp;#34;gRPC/TCP (Actions)&amp;#34;| Zone[&amp;#34;0_ath_core_server&amp;#34;]
+Zone --&amp;gt;|&amp;#34;Async Save&amp;#34;| DB[&amp;#34;Database&amp;#34;]
+Auth --&amp;gt;|&amp;#34;Query User&amp;#34;| DB
+&lt;/code>&lt;/pre>&lt;h2 id="1-login-flow-tcp">1. Login Flow (TCP)&lt;/h2>
+&lt;ol>
+&lt;li>The Game Client establishes a TCP connection to the &lt;code>0_ath_gateway&lt;/code>.&lt;/li>
+&lt;li>The Client sends an XOR-encrypted &lt;code>CLAskLogin&lt;/code> packet containing the user&amp;rsquo;s credentials.&lt;/li>
+&lt;li>The Gateway decrypts the packet and forwards the credentials to the &lt;code>0_ath_auth_server&lt;/code> via an internal request.&lt;/li>
+&lt;li>The Auth Server queries the Database, verifies the credentials, and responds to the Gateway with the Player&amp;rsquo;s identity (&amp;ldquo;This is Player 1&amp;rdquo;).&lt;/li>
+&lt;li>The Gateway maps the &lt;code>net.Conn&lt;/code> to the specific Player Account and returns an &lt;code>LCRetLogin&lt;/code> success packet to the Client.&lt;/li>
+&lt;/ol>
+&lt;h2 id="2-movement-flow-udp">2. Movement Flow (UDP)&lt;/h2>
+&lt;ol>
+&lt;li>The Client holds &amp;lsquo;W&amp;rsquo; to move their character.&lt;/li>
+&lt;li>The Client spams UDP position coordinate packets (marshalled via Protobuf) to the &lt;code>0_ath_gateway&lt;/code> (Port &lt;code>8081&lt;/code>).&lt;/li>
+&lt;li>The Gateway&amp;rsquo;s UDP Proxy listener continuously receives these packets and immediately relays them to the &lt;code>0_ath_movement_server&lt;/code> (Port &lt;code>9000&lt;/code>).&lt;/li>
+&lt;li>The Movement Server updates its internal Area of Interest (AoI) grid and broadcasts the new coordinates back to all nearby players.&lt;/li>
+&lt;/ol></description></item><item><title>End-to-End Microservice Pipelines Live</title><link>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-30-pipeline-implementation/</link><pubDate>Sat, 30 May 2026 00:00:00 +0000</pubDate><guid>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-30-pipeline-implementation/</guid><description>&lt;h1 id="end-to-end-microservice-pipelines-live">End-to-End Microservice Pipelines Live&lt;/h1>
+&lt;p>Following up on our recent transition to a microservice architecture, we have successfully implemented the core networking pipelines that route client traffic to our backend systems!&lt;/p>
+&lt;h2 id="1-udp-movement-pipeline">1. UDP Movement Pipeline&lt;/h2>
+&lt;p>We&amp;rsquo;ve established a highly performant UDP proxy in &lt;code>0_ath_gateway&lt;/code>.&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>Flow&lt;/strong>: Client -&amp;gt; Gateway (UDP &lt;code>:8081&lt;/code>) -&amp;gt; Movement Server (UDP &lt;code>:9000&lt;/code>).&lt;/li>
+&lt;li>&lt;strong>Mechanics&lt;/strong>: The Gateway blindly accepts UDP packets and forwards them to the Movement Server. The Movement Server (using &lt;code>gnet/v2&lt;/code>) deserializes the &lt;code>player.Location&lt;/code> protobuf, calculates the Area of Interest (AoI), and broadcasts the surrounding entities back to the Gateway. The Gateway then fans out this response to all active UDP clients.&lt;/li>
+&lt;li>&lt;strong>Result&lt;/strong>: We tested this via a custom simulator and successfully received real-time broadcast positions of other players and NPCs!&lt;/li>
+&lt;/ul>
+&lt;h2 id="2-tcp-login--action-pipeline">2. TCP Login &amp;amp; Action Pipeline&lt;/h2>
+&lt;p>The legacy TCP monolithic structure is officially a thing of the past.&lt;/p></description></item></channel></rss>

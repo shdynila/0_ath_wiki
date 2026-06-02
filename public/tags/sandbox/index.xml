@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Sandbox on 0ath MMORPG Knowledge Base</title><link>https://shdynila.github.io/0_ath_wiki/tags/sandbox/</link><description>Recent content in Sandbox on 0ath MMORPG Knowledge Base</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Sat, 30 May 2026 00:00:00 +0000</lastBuildDate><atom:link href="https://shdynila.github.io/0_ath_wiki/tags/sandbox/index.xml" rel="self" type="application/rss+xml"/><item><title>Client Architecture: Sandbox vs Online Mode</title><link>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-30-client-modes/</link><pubDate>Sat, 30 May 2026 00:00:00 +0000</pubDate><guid>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-30-client-modes/</guid><description>&lt;h1 id="dual-mode-client-architecture">Dual-Mode Client Architecture&lt;/h1>
+&lt;p>To streamline our UI/UX iteration speed and provide a robust testing environment, we have refactored the &lt;code>0_ath_client&lt;/code> to support two completely distinct execution paths: &lt;strong>Sandbox Mode&lt;/strong> and &lt;strong>Online Mode&lt;/strong>.&lt;/p>
+&lt;h2 id="1-sandbox-mode-offline">1. Sandbox Mode (Offline)&lt;/h2>
+&lt;p>Sandbox mode is designed purely for rapid iteration on graphics, UI layouts, animations, and local entity physics. It completely isolates the client from the backend network infrastructure.&lt;/p>
+&lt;p>&lt;strong>How to run it:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Using the CLI: &lt;code>./0ath.exe client --sandbox&lt;/code>&lt;/li>
+&lt;li>Direct execution: &lt;code>go run main.go --sandbox=true&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>Internal Flow:&lt;/strong>&lt;/p></description></item></channel></rss>

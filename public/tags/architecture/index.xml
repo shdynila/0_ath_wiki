@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Architecture on 0ath MMORPG Knowledge Base</title><link>https://shdynila.github.io/0_ath_wiki/tags/architecture/</link><description>Recent content in Architecture on 0ath MMORPG Knowledge Base</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Sat, 30 May 2026 00:00:00 +0000</lastBuildDate><atom:link href="https://shdynila.github.io/0_ath_wiki/tags/architecture/index.xml" rel="self" type="application/rss+xml"/><item><title>Client Architecture: Sandbox vs Online Mode</title><link>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-30-client-modes/</link><pubDate>Sat, 30 May 2026 00:00:00 +0000</pubDate><guid>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-30-client-modes/</guid><description>&lt;h1 id="dual-mode-client-architecture">Dual-Mode Client Architecture&lt;/h1>
+&lt;p>To streamline our UI/UX iteration speed and provide a robust testing environment, we have refactored the &lt;code>0_ath_client&lt;/code> to support two completely distinct execution paths: &lt;strong>Sandbox Mode&lt;/strong> and &lt;strong>Online Mode&lt;/strong>.&lt;/p>
+&lt;h2 id="1-sandbox-mode-offline">1. Sandbox Mode (Offline)&lt;/h2>
+&lt;p>Sandbox mode is designed purely for rapid iteration on graphics, UI layouts, animations, and local entity physics. It completely isolates the client from the backend network infrastructure.&lt;/p>
+&lt;p>&lt;strong>How to run it:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Using the CLI: &lt;code>./0ath.exe client --sandbox&lt;/code>&lt;/li>
+&lt;li>Direct execution: &lt;code>go run main.go --sandbox=true&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>Internal Flow:&lt;/strong>&lt;/p></description></item><item><title>Completing the Microservice Architecture &amp; Obsidian Automation</title><link>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-30-microservices-and-automation/</link><pubDate>Sat, 30 May 2026 00:00:00 +0000</pubDate><guid>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-30-microservices-and-automation/</guid><description>&lt;h1 id="microservice-architecture-finalized">Microservice Architecture Finalized&lt;/h1>
+&lt;p>Today, we successfully expanded our backend infrastructure to encompass all the core pillars required for a modern, scalable MMO.&lt;/p>
+&lt;p>We initialized three new critical services:&lt;/p>
+&lt;ol>
+&lt;li>&lt;strong>&lt;code>0_ath_social_server&lt;/code>&lt;/strong>: Dedicated entirely to managing Friends Lists, Parties, and Guild interactions. By isolating this, complex guild-wide database queries will never stutter the combat systems.&lt;/li>
+&lt;li>&lt;strong>&lt;code>0_ath_persistence_server&lt;/code>&lt;/strong>: A dedicated persistence layer. It accepts asynchronous state updates (inventory changes, quest completions, coordinate saving) via gRPC and handles the heavy lifting of queueing and writing them to PostgreSQL. This ensures the gameplay loops on the core servers never block on slow database I/O.&lt;/li>
+&lt;li>&lt;strong>&lt;code>0_ath_combat_server&lt;/code>&lt;/strong>: We realized that calculating Area-of-Effect (AoE) damage, hit registration, and combat formulas is extremely CPU intensive. The Combat Server acts as a dedicated high-performance node that executes attacks and pushes the results back to the Gateway for broadcasting, and to the Core server for state validation.&lt;/li>
+&lt;/ol>
+&lt;h3 id="internal-microservices-topology">Internal Microservices Topology&lt;/h3>
+&lt;p>Our cluster now consists of:&lt;/p></description></item><item><title>Core Network Flow: Login &amp; Movement</title><link>https://shdynila.github.io/0_ath_wiki/architecture/network-flow/</link><pubDate>Sat, 30 May 2026 00:00:00 +0000</pubDate><guid>https://shdynila.github.io/0_ath_wiki/architecture/network-flow/</guid><description>&lt;h1 id="0_ath-core-network-flow">0_ath Core Network Flow&lt;/h1>
+&lt;p>The following diagram illustrates the fundamental data pipeline for the &lt;code>0_ath&lt;/code> MMO, specifically highlighting how the Gateway proxies TCP and UDP traffic to our internal microservices.&lt;/p>
+&lt;pre tabindex="0">&lt;code class="language-mermaid" data-lang="mermaid">graph TD
+Client[&amp;#34;0_ath Game Client&amp;#34;] --&amp;gt;|&amp;#34;UDP&amp;#34;| Gate[&amp;#34;0_ath_gateway&amp;#34;]
+Client --&amp;gt;|&amp;#34;TCP&amp;#34;| Gate
+Gate --&amp;gt;|&amp;#34;gRPC/TCP&amp;#34;| Auth[&amp;#34;0_ath_auth_server&amp;#34;]
+Gate --&amp;gt;|&amp;#34;UDP (Positions)&amp;#34;| Move[&amp;#34;0_ath_movement_server&amp;#34;]
+Gate --&amp;gt;|&amp;#34;gRPC/TCP (Actions)&amp;#34;| Zone[&amp;#34;0_ath_core_server&amp;#34;]
+Zone --&amp;gt;|&amp;#34;Async Save&amp;#34;| DB[&amp;#34;Database&amp;#34;]
+Auth --&amp;gt;|&amp;#34;Query User&amp;#34;| DB
+&lt;/code>&lt;/pre>&lt;h2 id="1-login-flow-tcp">1. Login Flow (TCP)&lt;/h2>
+&lt;ol>
+&lt;li>The Game Client establishes a TCP connection to the &lt;code>0_ath_gateway&lt;/code>.&lt;/li>
+&lt;li>The Client sends an XOR-encrypted &lt;code>CLAskLogin&lt;/code> packet containing the user&amp;rsquo;s credentials.&lt;/li>
+&lt;li>The Gateway decrypts the packet and forwards the credentials to the &lt;code>0_ath_auth_server&lt;/code> via an internal request.&lt;/li>
+&lt;li>The Auth Server queries the Database, verifies the credentials, and responds to the Gateway with the Player&amp;rsquo;s identity (&amp;ldquo;This is Player 1&amp;rdquo;).&lt;/li>
+&lt;li>The Gateway maps the &lt;code>net.Conn&lt;/code> to the specific Player Account and returns an &lt;code>LCRetLogin&lt;/code> success packet to the Client.&lt;/li>
+&lt;/ol>
+&lt;h2 id="2-movement-flow-udp">2. Movement Flow (UDP)&lt;/h2>
+&lt;ol>
+&lt;li>The Client holds &amp;lsquo;W&amp;rsquo; to move their character.&lt;/li>
+&lt;li>The Client spams UDP position coordinate packets (marshalled via Protobuf) to the &lt;code>0_ath_gateway&lt;/code> (Port &lt;code>8081&lt;/code>).&lt;/li>
+&lt;li>The Gateway&amp;rsquo;s UDP Proxy listener continuously receives these packets and immediately relays them to the &lt;code>0_ath_movement_server&lt;/code> (Port &lt;code>9000&lt;/code>).&lt;/li>
+&lt;li>The Movement Server updates its internal Area of Interest (AoI) grid and broadcasts the new coordinates back to all nearby players.&lt;/li>
+&lt;/ol></description></item><item><title>Microservice Architecture Plan for 0_ath</title><link>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-30-microservice-architecture/</link><pubDate>Sat, 30 May 2026 00:00:00 +0000</pubDate><guid>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-30-microservice-architecture/</guid><description>&lt;h1 id="microservice-architecture-plan-for-0_ath">Microservice Architecture Plan for 0_ath&lt;/h1>
+&lt;p>This document outlines the modern microservice architecture for &lt;strong>0_ath&lt;/strong>, evolving past the legacy monolithic design of FKServer2.&lt;/p>
+&lt;p>The goal is to have a highly performant, scalable system where each distinct service lives in its own repository, communicating via well-defined Protocol Buffers.&lt;/p>
+&lt;h2 id="repository-split--roles">Repository Split &amp;amp; Roles&lt;/h2>
+&lt;p>Based on the requirement for a &amp;ldquo;repository per service&amp;rdquo;, here are the core repositories that have been created, and their specific roles:&lt;/p></description></item><item><title>The 0ath CLI and Local Kubernetes Automation</title><link>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-30-cli-and-kubernetes/</link><pubDate>Sat, 30 May 2026 00:00:00 +0000</pubDate><guid>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-30-cli-and-kubernetes/</guid><description>&lt;h1 id="the-0ath-cli-orchestrator">The &lt;code>0ath&lt;/code> CLI Orchestrator&lt;/h1>
+&lt;p>As our microservice architecture grew to encompass 8 separate backend services, running them manually became unmanageable. To solve this, we created the &lt;code>0ath-cli&lt;/code>—a dedicated orchestration tool built in Go using the &lt;code>cobra&lt;/code> framework.&lt;/p>
+&lt;p>The CLI serves two primary purposes:&lt;/p>
+&lt;ol>
+&lt;li>&lt;strong>Local Development:&lt;/strong> Running &lt;code>0ath dev&lt;/code> spins up all our backend servers simultaneously via &lt;code>os/exec&lt;/code>, multiplexing their logs into a single terminal window.&lt;/li>
+&lt;li>&lt;strong>Infrastructure Automation:&lt;/strong> It handles the complex bootstrapping of our Kubernetes clusters.&lt;/li>
+&lt;/ol>
+&lt;h1 id="local-first-kubernetes-with-k3d">Local-First Kubernetes with &lt;code>k3d&lt;/code>&lt;/h1>
+&lt;p>We firmly believe in a &amp;ldquo;local-first&amp;rdquo; development mindset. To ensure every developer can spin up the full production topology on their local Windows machine, we integrated &lt;strong>&lt;code>k3d&lt;/code>&lt;/strong> automation directly into the CLI.&lt;/p></description></item></channel></rss>

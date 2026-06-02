@@ -1,4 +1,39 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Architectures on 0ath MMORPG Knowledge Base</title><link>https://shdynila.github.io/0_ath_wiki/architecture/</link><description>Recent content in Architectures on 0ath MMORPG Knowledge Base</description><generator>Hugo</generator><language>en-us</language><atom:link href="https://shdynila.github.io/0_ath_wiki/architecture/index.xml" rel="self" type="application/rss+xml"/><item><title/><link>https://shdynila.github.io/0_ath_wiki/architecture/ai_knowledge_service/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://shdynila.github.io/0_ath_wiki/architecture/ai_knowledge_service/</guid><description>&lt;h1 id="ai-knowledge-service--sync">AI Knowledge Service &amp;amp; Sync&lt;/h1>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Architectures on 0ath MMORPG Knowledge Base</title><link>https://shdynila.github.io/0_ath_wiki/architecture/</link><description>Recent content in Architectures on 0ath MMORPG Knowledge Base</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Sun, 31 May 2026 00:00:00 +0000</lastBuildDate><atom:link href="https://shdynila.github.io/0_ath_wiki/architecture/index.xml" rel="self" type="application/rss+xml"/><item><title>Initiative: World Streaming and GM Mode</title><link>https://shdynila.github.io/0_ath_wiki/architecture/initiative-world-streaming-and-gm/</link><pubDate>Sun, 31 May 2026 00:00:00 +0000</pubDate><guid>https://shdynila.github.io/0_ath_wiki/architecture/initiative-world-streaming-and-gm/</guid><description>&lt;h1 id="real-time-world-streaming--gm-mode">Real-Time World Streaming &amp;amp; GM Mode&lt;/h1>
+&lt;p>This document outlines the architectural strategy and initiatives for migrating map object rendering into a dedicated &lt;strong>Real-Time gRPC Streaming World Server&lt;/strong>, and adding &lt;strong>interactive dynamic object spawning&lt;/strong> for both offline and online multiplayer.&lt;/p>
+&lt;h2 id="architectural-goals">Architectural Goals&lt;/h2>
+&lt;ol>
+&lt;li>&lt;strong>Maintain High-Frequency Movement:&lt;/strong> &lt;code>0_ath_movement_server&lt;/code> must continue to handle only high-frequency player movement (UDP).&lt;/li>
+&lt;li>&lt;strong>Modular Core Server:&lt;/strong> &lt;code>0_ath_core_server&lt;/code> must be structured as a &lt;strong>Modular Monolith&lt;/strong> using &lt;code>internal/&lt;/code> packages (e.g., &lt;code>internal/world&lt;/code>, &lt;code>internal/gm&lt;/code>). This prevents the need to spin up multiple microservices in the future while keeping the codebase decoupled and clean.&lt;/li>
+&lt;li>&lt;strong>Real-Time Subscriptions:&lt;/strong> Game clients will open a persistent gRPC server-to-client stream to &lt;code>0_ath_core_server&lt;/code> to receive dynamic world object events (&lt;code>EVENT_SPAWN&lt;/code>, &lt;code>EVENT_MOVE&lt;/code>, &lt;code>EVENT_DESPAWN&lt;/code>) instantly.&lt;/li>
+&lt;li>&lt;strong>Interactive GM Mode:&lt;/strong> Players acting as GMs can spawn items by using a &lt;code>/gm&lt;/code> chat command to enter GM Mode, followed by left-clicking the game map.&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h2 id="initiatives-breakdown">Initiatives Breakdown&lt;/h2>
+&lt;p>We will execute this vision through three distinct, manageable initiatives:&lt;/p></description></item><item><title>Core Network Flow: Login &amp; Movement</title><link>https://shdynila.github.io/0_ath_wiki/architecture/network-flow/</link><pubDate>Sat, 30 May 2026 00:00:00 +0000</pubDate><guid>https://shdynila.github.io/0_ath_wiki/architecture/network-flow/</guid><description>&lt;h1 id="0_ath-core-network-flow">0_ath Core Network Flow&lt;/h1>
+&lt;p>The following diagram illustrates the fundamental data pipeline for the &lt;code>0_ath&lt;/code> MMO, specifically highlighting how the Gateway proxies TCP and UDP traffic to our internal microservices.&lt;/p>
+&lt;pre tabindex="0">&lt;code class="language-mermaid" data-lang="mermaid">graph TD
+Client[&amp;#34;0_ath Game Client&amp;#34;] --&amp;gt;|&amp;#34;UDP&amp;#34;| Gate[&amp;#34;0_ath_gateway&amp;#34;]
+Client --&amp;gt;|&amp;#34;TCP&amp;#34;| Gate
+Gate --&amp;gt;|&amp;#34;gRPC/TCP&amp;#34;| Auth[&amp;#34;0_ath_auth_server&amp;#34;]
+Gate --&amp;gt;|&amp;#34;UDP (Positions)&amp;#34;| Move[&amp;#34;0_ath_movement_server&amp;#34;]
+Gate --&amp;gt;|&amp;#34;gRPC/TCP (Actions)&amp;#34;| Zone[&amp;#34;0_ath_core_server&amp;#34;]
+Zone --&amp;gt;|&amp;#34;Async Save&amp;#34;| DB[&amp;#34;Database&amp;#34;]
+Auth --&amp;gt;|&amp;#34;Query User&amp;#34;| DB
+&lt;/code>&lt;/pre>&lt;h2 id="1-login-flow-tcp">1. Login Flow (TCP)&lt;/h2>
+&lt;ol>
+&lt;li>The Game Client establishes a TCP connection to the &lt;code>0_ath_gateway&lt;/code>.&lt;/li>
+&lt;li>The Client sends an XOR-encrypted &lt;code>CLAskLogin&lt;/code> packet containing the user&amp;rsquo;s credentials.&lt;/li>
+&lt;li>The Gateway decrypts the packet and forwards the credentials to the &lt;code>0_ath_auth_server&lt;/code> via an internal request.&lt;/li>
+&lt;li>The Auth Server queries the Database, verifies the credentials, and responds to the Gateway with the Player&amp;rsquo;s identity (&amp;ldquo;This is Player 1&amp;rdquo;).&lt;/li>
+&lt;li>The Gateway maps the &lt;code>net.Conn&lt;/code> to the specific Player Account and returns an &lt;code>LCRetLogin&lt;/code> success packet to the Client.&lt;/li>
+&lt;/ol>
+&lt;h2 id="2-movement-flow-udp">2. Movement Flow (UDP)&lt;/h2>
+&lt;ol>
+&lt;li>The Client holds &amp;lsquo;W&amp;rsquo; to move their character.&lt;/li>
+&lt;li>The Client spams UDP position coordinate packets (marshalled via Protobuf) to the &lt;code>0_ath_gateway&lt;/code> (Port &lt;code>8081&lt;/code>).&lt;/li>
+&lt;li>The Gateway&amp;rsquo;s UDP Proxy listener continuously receives these packets and immediately relays them to the &lt;code>0_ath_movement_server&lt;/code> (Port &lt;code>9000&lt;/code>).&lt;/li>
+&lt;li>The Movement Server updates its internal Area of Interest (AoI) grid and broadcasts the new coordinates back to all nearby players.&lt;/li>
+&lt;/ol></description></item><item><title/><link>https://shdynila.github.io/0_ath_wiki/architecture/ai_knowledge_service/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://shdynila.github.io/0_ath_wiki/architecture/ai_knowledge_service/</guid><description>&lt;h1 id="ai-knowledge-service--sync">AI Knowledge Service &amp;amp; Sync&lt;/h1>
 &lt;p>The knowledge ecosystem gives NPCs a &amp;ldquo;brain&amp;rdquo; and memory, integrating game mechanics with our devlog lore.&lt;/p>
 &lt;h2 id="0_ath_knowledge_sync">0_ath_knowledge_sync&lt;/h2>
 &lt;p>A background Go service using &lt;code>fsnotify&lt;/code>.&lt;/p>

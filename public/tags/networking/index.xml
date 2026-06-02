@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Networking on 0ath MMORPG Knowledge Base</title><link>https://shdynila.github.io/0_ath_wiki/tags/networking/</link><description>Recent content in Networking on 0ath MMORPG Knowledge Base</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Sat, 30 May 2026 00:00:00 +0000</lastBuildDate><atom:link href="https://shdynila.github.io/0_ath_wiki/tags/networking/index.xml" rel="self" type="application/rss+xml"/><item><title>Client Architecture: Sandbox vs Online Mode</title><link>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-30-client-modes/</link><pubDate>Sat, 30 May 2026 00:00:00 +0000</pubDate><guid>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-30-client-modes/</guid><description>&lt;h1 id="dual-mode-client-architecture">Dual-Mode Client Architecture&lt;/h1>
+&lt;p>To streamline our UI/UX iteration speed and provide a robust testing environment, we have refactored the &lt;code>0_ath_client&lt;/code> to support two completely distinct execution paths: &lt;strong>Sandbox Mode&lt;/strong> and &lt;strong>Online Mode&lt;/strong>.&lt;/p>
+&lt;h2 id="1-sandbox-mode-offline">1. Sandbox Mode (Offline)&lt;/h2>
+&lt;p>Sandbox mode is designed purely for rapid iteration on graphics, UI layouts, animations, and local entity physics. It completely isolates the client from the backend network infrastructure.&lt;/p>
+&lt;p>&lt;strong>How to run it:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Using the CLI: &lt;code>./0ath.exe client --sandbox&lt;/code>&lt;/li>
+&lt;li>Direct execution: &lt;code>go run main.go --sandbox=true&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;p>&lt;strong>Internal Flow:&lt;/strong>&lt;/p></description></item><item><title>Dedicated Chat Server Architecture</title><link>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-30-dedicated-chat-server/</link><pubDate>Sat, 30 May 2026 00:00:00 +0000</pubDate><guid>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-30-dedicated-chat-server/</guid><description>&lt;h1 id="dedicated-chat-server-architecture">Dedicated Chat Server Architecture&lt;/h1>
+&lt;p>As part of our commitment to building a highly scalable MMO backend, we have successfully decoupled the Chat System into its own isolated microservice: &lt;code>0_ath_chat_server&lt;/code>.&lt;/p>
+&lt;h2 id="why-separate-chat">Why Separate Chat?&lt;/h2>
+&lt;p>In an MMO environment, chat generates an enormous amount of string allocation, garbage collection overhead, and I/O wait times. A server-wide broadcast can instantly flood the network stack. By separating chat from the &lt;code>0_ath_core_server&lt;/code> (which handles combat, physics, and state validation), we ensure that a sudden influx of player messages will &lt;strong>never&lt;/strong> cause combat lag spikes.&lt;/p></description></item><item><title>End-to-End Microservice Pipelines Live</title><link>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-30-pipeline-implementation/</link><pubDate>Sat, 30 May 2026 00:00:00 +0000</pubDate><guid>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-30-pipeline-implementation/</guid><description>&lt;h1 id="end-to-end-microservice-pipelines-live">End-to-End Microservice Pipelines Live&lt;/h1>
+&lt;p>Following up on our recent transition to a microservice architecture, we have successfully implemented the core networking pipelines that route client traffic to our backend systems!&lt;/p>
+&lt;h2 id="1-udp-movement-pipeline">1. UDP Movement Pipeline&lt;/h2>
+&lt;p>We&amp;rsquo;ve established a highly performant UDP proxy in &lt;code>0_ath_gateway&lt;/code>.&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>Flow&lt;/strong>: Client -&amp;gt; Gateway (UDP &lt;code>:8081&lt;/code>) -&amp;gt; Movement Server (UDP &lt;code>:9000&lt;/code>).&lt;/li>
+&lt;li>&lt;strong>Mechanics&lt;/strong>: The Gateway blindly accepts UDP packets and forwards them to the Movement Server. The Movement Server (using &lt;code>gnet/v2&lt;/code>) deserializes the &lt;code>player.Location&lt;/code> protobuf, calculates the Area of Interest (AoI), and broadcasts the surrounding entities back to the Gateway. The Gateway then fans out this response to all active UDP clients.&lt;/li>
+&lt;li>&lt;strong>Result&lt;/strong>: We tested this via a custom simulator and successfully received real-time broadcast positions of other players and NPCs!&lt;/li>
+&lt;/ul>
+&lt;h2 id="2-tcp-login--action-pipeline">2. TCP Login &amp;amp; Action Pipeline&lt;/h2>
+&lt;p>The legacy TCP monolithic structure is officially a thing of the past.&lt;/p></description></item><item><title>Zero-Dependency Pub/Sub with Postgres</title><link>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-30-postgres-pubsub/</link><pubDate>Sat, 30 May 2026 00:00:00 +0000</pubDate><guid>https://shdynila.github.io/0_ath_wiki/devlog/2026-05-30-postgres-pubsub/</guid><description>&lt;h1 id="zero-dependency-pubsub-with-postgres">Zero-Dependency Pub/Sub with Postgres&lt;/h1>
+&lt;p>As we fleshed out the &lt;strong>&lt;code>0_ath_chat_server&lt;/code>&lt;/strong>, we needed a way to broadcast chat messages across our microservice cluster so the &lt;code>0_ath_gateway&lt;/code> could push them down to connected TCP clients. The standard industry approach would be to deploy Redis or NATS.&lt;/p>
+&lt;p>However, to keep our deployment infrastructure lean, mean, and simple for this early stage, we chose to leverage &lt;strong>PostgreSQL&amp;rsquo;s native &lt;code>LISTEN/NOTIFY&lt;/code>&lt;/strong> capabilities!&lt;/p>
+&lt;h2 id="the-architecture">The Architecture&lt;/h2>
+&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>The Chat Server (&lt;code>0_ath_chat_server&lt;/code>)&lt;/strong>:&lt;/p></description></item></channel></rss>
