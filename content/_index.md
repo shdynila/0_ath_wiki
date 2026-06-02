@@ -18,6 +18,6 @@ Welcome to the 0ath MMORPG documentation and devlog graph.
   - `0_ath_auth_server` (Auth & Tokens)
   - `0_ath_movement_server` (UDP high-tick coordinate streaming)
   - `0_ath_knowledge_service` (gRPC wrapper for AI & Qdrant)
-  - `0_ath_client` (Raylib Go Client)
+  - `0_ath_client` (Ebitengine Go Client)
   - `0_ath_proto` (gRPC definitions using Buf)
   - `0_ath_knowledge_sync` (Auto-syncs this Obsidian vault to Qdrant)
