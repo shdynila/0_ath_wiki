@@ -10,8 +10,3 @@ tasks:
     desc: Build the static Hugo site
     cmds:
       - hugo --minify
-
-  sync:
-    desc: Sync Obsidian vault to Hugo content
-    cmds:
-      - powershell -ExecutionPolicy Bypass -File .\sync.ps1
