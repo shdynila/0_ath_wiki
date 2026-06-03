@@ -5,6 +5,9 @@ tags: ["animation"]
 ---
 # wobble Animation
 
+## Version 9
+![Version 9](wobble-9.gif)
+
 ## Version 8
 ![Version 8](wobble-8.gif)
 
