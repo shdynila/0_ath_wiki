@@ -5,11 +5,14 @@ tags: ["animation"]
 ---
 # wobble Animation
 
-## Latest (Generation 3)
-![Latest](wobble-3.gif)
+## Latest (Generation 4)
+![Latest](wobble-4.gif)
 
 ---
 ## History
+
+### Generation 3
+![Generation 3](wobble-3.gif)
 
 ### Generation 2
 ![Generation 2](wobble-2.gif)
