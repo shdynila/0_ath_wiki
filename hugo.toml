@@ -9,3 +9,4 @@ theme = 'PaperMod'
   author = '0ath Dev'
   ShowToc = true
   TocOpen = true
+  mainSections = ['Devlog', 'Architecture']
