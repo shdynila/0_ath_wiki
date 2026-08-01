@@ -6,7 +6,7 @@ tags: [architecture, logging, k0s, grafana, loki, promtail]
 
 # Centralized Logging in 0ath
 
-As the MMO infrastructure grows into multiple microservices (Zone Server, Social Server, Persistence Server, etc.), reading raw text logs from individual machines via SSH becomes unscalable.
+As the MMO infrastructure grows into multiple microservices (Zone Server, Social Server, Data Server, etc.), reading raw text logs from individual machines via SSH becomes unscalable.
 
 To solve this, we use the **PLG Stack (Promtail, Loki, Grafana)** for centralized logging.
 

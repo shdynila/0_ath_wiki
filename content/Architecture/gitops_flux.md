@@ -15,7 +15,7 @@ Unlike ArgoCD, Flux is extremely lightweight (headless, no UI by default) which 
 Flux is configured via the `clusters/hetzner` directory in the `0_ath_manifests` repository.
 
 1. **`infrastructure.yaml`**: A Flux Kustomization that syncs the `infrastructure/` directory (Postgres, Gateway, Keycloak, Cilium).
-2. **`services.yaml`**: A Flux Kustomization that syncs the `services/` directory (Auth, Chat, Social, Zone, Persistence). 
+2. **`services.yaml`**: A Flux Kustomization that syncs the `services/` directory (Auth, Chat, Social, Zone, Data). 
    - This explicitly depends on `infrastructure` to ensure databases and networking are ready first.
    - It is configured with `decryption: provider: sops; secretRef: sops-age` to automatically unlock encrypted secrets on the fly.
 

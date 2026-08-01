@@ -14,7 +14,7 @@ The cluster spans across x86_64 and ARM64 hardware:
 
 1. **Node 1: Main PC (Control Plane + Worker - x86_64)**
    - Serves as the brain of the cluster (API server, etcd).
-   - **Workloads:** Heavy stateful applications requiring fast disk I/O and CPU, such as `0_ath_persistence_server`, the `PostgreSQL` master database (via Local Persistent Volumes), and `0_ath_movement_server`.
+   - **Workloads:** Heavy stateful applications requiring fast disk I/O and CPU, such as `0_ath_data_server`, the `PostgreSQL` master database (via Local Persistent Volumes), and `0_ath_movement_server`.
 2. **Node 2: Laptop (Worker - x86_64)**
    - Acts as a scalable compute node.
    - **Workloads:** Stateless mesh microservices like `0_ath_auth_server`, Chat, Social, and Combat.
