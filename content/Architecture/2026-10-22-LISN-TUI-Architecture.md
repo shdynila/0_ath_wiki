@@ -11,9 +11,11 @@ tags: ["architecture", "audio", "golang", "tui", "bubbletea", "onnx", "ai", "dsp
 `LISN-TUI` is a complete rewrite and reimagining of the C++/JUCE-based [LISN StemSplitter](https://github.com/EdiKrasniqi11/lisn-vst) as a high-performance, cross-platform **Terminal User Interface (TUI)** and CLI application written in **Golang**.
 
 Following the architectural migration from legacy, archived Python dependencies (`facebookresearch/demucs`), the separation engine runs **100% Python-free** using **Native Go via ONNX Runtime** (`github.com/yalue/onnxruntime_go`). It executes active, state-of-the-art neural network architectures:
+- **Studio 7-Stem Deconstruction (`onnx_all`)**: Fully deconstructs audio into 7 distinct isolated tracks (Lead Vocals, Harmonies, Drums, Bass, Guitars, Pianos, Synths/Other).
+- **Studio 6-Stem Band (`onnx_6stem`)**: Isolates Guitars and Pianos as dedicated channels alongside Vocals, Drums, Bass, and Other.
+- **MDX-B 4-Stem ONNX (`onnx_4stem`)**: High-fidelity 4-stem band separation (Vocals, Drums, Bass, Other).
 - **UVR MDX-Net Vocals (`mdx_vocals`)**: Kim/UVR architecture for ultra-crisp vocal and instrumental isolation.
 - **Mel-Band RoFormer Vocals (`roformer_vocals`)**: State-of-the-Art vocal isolation with pristine acoustic fidelity and high Signal-to-Distortion Ratio (SDR).
-- **MDX-B 4-Stem ONNX (`onnx_4stem`)**: High-fidelity 4-stem band separation (Vocals, Drums, Bass, Other).
 - **Secondary Harmony Split**: Automatically isolates Lead Vocals from Backing Harmonies.
 
 The audio subsystem combines these modern ONNX models with a real-time, sample-accurate multi-track audio playback and mixing engine. It renders ANSI waveform visualizers and peak VU meters directly in the terminal, allowing music producers and sound engineers to isolate, preview, loop, time-stretch, and export audio stems without opening a heavy Digital Audio Workstation (DAW).
@@ -90,7 +92,15 @@ The audio subsystem combines these modern ONNX models with a real-time, sample-a
 - **Standalone Ingestion**: Standalone `yt-dlp` and `ffmpeg` detection with explicit `--ffmpeg-location` binding ensures audio extraction operates without system environment reboots or Python virtual environments.
 - **Unified Cache Mapping**: URLs are canonicalized to unique 11-character video IDs. The cache manager unifies raw URL queries with extracted audio file hashes (`downloads/<videoID>.wav`), transparently resolving previously separated YouTube streams.
 - **Event-Driven Result Forwarding**: `engine.ProgressEvent` carries the resolved `SeparationResult` directly to the Bubble Tea event loop, eliminating state-reconstruction cache misses and seamlessly initializing the audio engine.
-- **Metadata Preservation**: Sibling `.title` files ensure the human-readable song title (e.g. `Mall Grab - Feel U`) is persisted and displayed in the recent separations list rather than raw video identifiers.
+### 3.5 Acoustic Instrument Detective & Stem Decomposition (`pkg/engine/detective.go`)
+- **Acoustic Feature Extraction**: Extracts time-domain multi-band energy distributions (Sub 20-80Hz, Low 80-250Hz, Low-Mid 250-800Hz, Mid 800-2500Hz, High-Mid 2.5-6kHz, High 6-16kHz), Crest Factor (Peak/RMS transient punchiness), zero-crossing rates, and onset density.
+- **Mid/Side Spatial Staging**: Analyzes stereo imaging (`(L - R) / (L + R)`) to classify elements as dead center, stereo spread, or ultra-wide ambient washes.
+- **Multi-Class Instrument Classification**:
+  - **Deconstructing "Other"**: Distinguishes Acoustic Grand Piano, Electric Piano (Rhodes/Wurlitzer), Electric Guitars, Acoustic Guitars, Synth Leads/Arps, Ambient Synth Pads/Strings, and Brass/Horns.
+  - **Vocal Decomposition**: Breaks vocal stems into Lead Vocals, Backing Harmonies/Doubles, and Ambient Reverb/Delay Tails.
+  - **Rhythm & Low-End Breakdown**: Isolates Kick, Snare, Hi-Hats, Toms, Sub-Bass/808s, Electric Bass Guitars, and Synth Basslines.
+- **Visual ANSI Dashboard**: Integrated into `lisn detect [file/dir/url]`, the headless `lisn split` completion output, and the interactive TUI Describe overlay (<kbd>d</kbd> / `:detect`).
+- **Persistent Caching**: Serializes results into `instruments.json` alongside stem directories to deliver sub-millisecond lookups on recurring tracks.
 
 ---
 
@@ -113,5 +123,6 @@ The implementation was validated with Go unit test suites across all layers:
 - `pkg/audio/engine_test.go`: Verified multi-track lockstep mixing, muting, soloing, WAV header generation, and waveform rendering.
 - `pkg/engine/cache_test.go`: Verified SHA-256 key stability, cache hits, and stem directory discovery.
 - `pkg/engine/onnx_test.go`: Verified model registry metadata, ONNX environment discovery, fallback stem generation, and harmony splitting.
+- `pkg/engine/detective_test.go`: Verified multi-stem acoustic feature extraction, instrument confidence classification, ANSI report formatting, and JSON caching.
 - `pkg/tui/app_test.go`: Verified Bubble Tea navigation, model switching, Doctor diagnostics, and k9s command flows.
 All test suites pass with 100% success.
