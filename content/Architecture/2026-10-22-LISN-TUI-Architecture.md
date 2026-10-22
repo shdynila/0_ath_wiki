@@ -11,9 +11,9 @@ tags: ["architecture", "audio", "golang", "tui", "bubbletea", "onnx", "ai", "dsp
 `LISN-TUI` is a complete rewrite and reimagining of the C++/JUCE-based [LISN StemSplitter](https://github.com/EdiKrasniqi11/lisn-vst) as a high-performance, cross-platform **Terminal User Interface (TUI)** and CLI application written in **Golang**.
 
 Following the architectural migration from legacy, archived Python dependencies (`facebookresearch/demucs`), the separation engine runs **100% Python-free** using **Native Go via ONNX Runtime** (`github.com/yalue/onnxruntime_go`). It executes active, state-of-the-art neural network architectures:
-- **Studio 7-Stem Deconstruction (`onnx_all`)**: Fully deconstructs audio into 7 distinct isolated tracks (Lead Vocals, Harmonies, Drums, Bass, Guitars, Pianos, Synths/Other).
-- **Studio 6-Stem Band (`onnx_6stem`)**: Isolates Guitars and Pianos as dedicated channels alongside Vocals, Drums, Bass, and Other.
-- **MDX-B 4-Stem ONNX (`onnx_4stem`)**: High-fidelity 4-stem band separation (Vocals, Drums, Bass, Other).
+- **Studio 8-Stem Deconstruction (`onnx_all`)**: Fully deconstructs audio into 8 distinct isolated tracks (Lead Vocals, Harmonies, Drums, Bass, Guitars, Pianos, Synthesizers, Pads & Strings) with 0% undefined "Other".
+- **Studio 6-Stem Band (`onnx_6stem`)**: Isolates Guitars, Pianos, and Synthesizers as dedicated channels alongside Vocals, Drums, and Bass.
+- **MDX-B 4-Stem ONNX (`onnx_4stem`)**: Standard 4-stem band separation (Vocals, Drums, Bass, Other).
 - **UVR MDX-Net Vocals (`mdx_vocals`)**: Kim/UVR architecture for ultra-crisp vocal and instrumental isolation.
 - **Mel-Band RoFormer Vocals (`roformer_vocals`)**: State-of-the-Art vocal isolation with pristine acoustic fidelity and high Signal-to-Distortion Ratio (SDR).
 - **Secondary Harmony Split**: Automatically isolates Lead Vocals from Backing Harmonies.
